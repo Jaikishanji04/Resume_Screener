@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Resume Screener & Leaderboard | Metallic Edition</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Cinzel"', 'serif'],
+          },
+          colors: {
+            metallic: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#0b0f17',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 45%, #080b11 100%);
+      background-attachment: fixed;
+      color: #f1f5f9;
+    }
+    
+    /* Metallic Glass Panel */
+    .glass-panel {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(226, 232, 240, 0.15);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+    .glass-panel-hover:hover {
+      border-color: rgba(203, 213, 225, 0.35);
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.25), 0 12px 35px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Polished Metallic Chrome Text */
+    .gradient-text-metallic {
+      background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 25%, #94a3b8 50%, #f8fafc 75%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 2px 10px rgba(255, 255, 255, 0.15);
+    }
+
+    /* Metallic Gold Accent Text */
+    .gradient-text-gold {
+      background: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #ca8a04 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Metallic Titanium Button */
+    .gradient-button-metallic {
+      background: linear-gradient(135deg, #475569 0%, #64748b 35%, #334155 70%, #1e293b 100%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .gradient-button-metallic:hover:not(:disabled) {
+      background: linear-gradient(135deg, #64748b 0%, #94a3b8 35%, #475569 70%, #334155 100%);
+      border-color: rgba(255, 255, 255, 0.45);
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 0 25px rgba(226, 232, 240, 0.25);
+      transform: translateY(-1px);
+    }
+
+    /* Metallic Shimmer Effect */
+    .metallic-shine {
+      position: relative;
+      overflow: hidden;
+    }
+    .metallic-shine::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        60deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.12) 50%,
+        transparent 70%
+      );
+      transform: rotate(30deg);
+      animation: shine 6s infinite linear;
+    }
+    @keyframes shine {
+      0% { transform: translateX(-100%) rotate(30deg); }
+      100% { transform: translateX(100%) rotate(30deg); }
+    }
+
+    /* Custom Scrollbar - Brushed Steel */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #475569 0%, #334155 100%);
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #64748b 0%, #475569 100%);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-slate-400 selection:text-slate-950">
+
+  <!-- Navigation Header -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-slate-700/60 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-200 via-slate-400 to-slate-700 p-[1px] shadow-lg shadow-slate-900/50 flex items-center justify-center metallic-shine">
+          <div class="w-full h-full bg-slate-900 rounded-[11px] flex items-center justify-center">
+            <svg class="w-6 h-6 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2 font-sans">
+            AI Resume Screener <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-gradient-to-r from-slate-700 to-slate-800 text-slate-200 border border-slate-500/40 font-semibold tracking-wider uppercase shadow-inner">Metallic Engine</span>
+          </h1>
+          <p class="text-xs text-slate-400">Automated Candidate Ranking & Deep NLP Skill Scoring</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 text-xs text-slate-300 bg-slate-900/90 px-3.5 py-1.5 rounded-lg border border-slate-700/80 shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400"></span>
+          <span>API Active: <strong class="text-slate-100 font-mono">127.0.0.1:8000</strong></span>
+        </div>
+        <a href="http://127.0.0.1:8000/docs" target="_blank" class="text-xs font-semibold text-slate-300 hover:text-white transition-colors flex items-center gap-1 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-500">
+          <span>Swagger Docs</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- LEFT COLUMN: Job Description & Upload Form (5 cols) -->
+    <div class="lg:col-span-5 flex flex-col gap-6">
+      
+      <!-- Card Container -->
+      <div class="glass-panel rounded-2xl p-6 shadow-2xl flex flex-col gap-6 border border-slate-700/70">
+        
+        <!-- Header -->
+        <div class="border-b border-slate-700/80 pb-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+            1. Job Description & Criteria
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Paste the target job requirements or click a metallic preset below.</p>
+        </div>
+
+        <!-- Presets -->
+        <div class="flex flex-wrap gap-2">
+          <span class="text-xs text-slate-400 self-center font-medium">Presets:</span>
+          <button type="button" onclick="setPreset('python')" class="text-xs bg-gradient-to-b from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-600 hover:border-slate-400 transition-all shadow-sm">
+            Python Dev
+          </button>
+          <button type="button" onclick="setPreset('ai')" class="text-xs bg-gradient-to-b from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-600 hover:border-slate-400 transition-all shadow-sm">
+            AI/ML Engineer
+          </button>
+          <button type="button" onclick="setPreset('frontend')" class="text-xs bg-gradient-to-b from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-600 hover:border-slate-400 transition-all shadow-sm">
+            Frontend Dev
+          </button>
+        </div>
+
+        <!-- Job Description Textarea -->
+        <div>
+          <textarea id="jobDescription" rows="5" placeholder="Paste full job description, required technical skills, qualifications, and responsibilities here..." class="w-full bg-slate-950/80 border border-slate-700/90 rounded-xl p-4 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all resize-none shadow-inner"></textarea>
+        </div>
+
+        <!-- Upload PDF Resumes Section -->
+        <div class="border-t border-slate-700/80 pt-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 0115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              2. Upload Candidate Resumes
+            </h2>
+            <span id="fileCountBadge" class="text-xs font-bold bg-slate-800 text-slate-300 px-2.5 py-0.5 rounded-full border border-slate-600">0 PDFs</span>
+          </div>
+
+          <!-- Drag and Drop Dropzone -->
+          <div id="dropZone" onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-slate-600 hover:border-slate-300 bg-slate-950/40 hover:bg-slate-900/60 rounded-xl p-6 text-center cursor-pointer transition-all group flex flex-col items-center justify-center shadow-inner">
+            <input type="file" id="fileInput" multiple accept=".pdf" class="hidden" onchange="handleFileSelect(event)" />
+            <div class="w-12 h-12 rounded-full bg-gradient-to-b from-slate-700 to-slate-800 group-hover:from-slate-600 group-hover:to-slate-700 flex items-center justify-center text-slate-300 group-hover:text-white mb-3 transition-colors border border-slate-500/50 shadow-md">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <p class="text-sm font-semibold text-slate-200 group-hover:text-white">Click to upload or drag & drop PDFs</p>
+            <p class="text-xs text-slate-400 mt-1">Supports multiple PDF files up to 20MB total</p>
+          </div>
+
+          <!-- File List -->
+          <div id="fileList" class="flex flex-col gap-2 max-h-44 overflow-y-auto pr-1 hidden">
+            <!-- Dynamically populated files -->
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="analyzeBtn" onclick="submitScreening()" class="w-full gradient-button-metallic text-slate-100 font-bold py-3.5 px-6 rounded-xl flex items-center justify-center gap-3 shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider text-xs">
+          <svg id="btnIcon" class="w-5 h-5 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          <svg id="btnSpinner" class="w-5 h-5 animate-spin text-slate-200 hidden" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span id="btnText" class="tracking-widest">Analyze & Rank Resumes</span>
+        </button>
+
+        <!-- Status Message -->
+        <div id="statusMessage" class="hidden text-xs text-center p-3 rounded-xl font-medium"></div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Leaderboard & Results (7 cols) -->
+    <div class="lg:col-span-7 flex flex-col gap-6">
+
+      <!-- Stats Cards Row -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="glass-panel rounded-xl p-4 border border-slate-700/80 flex flex-col relative overflow-hidden">
+          <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Total Evaluated</span>
+          <span id="statTotal" class="text-3xl font-extrabold text-slate-100 mt-1">0</span>
+        </div>
+        <div class="glass-panel rounded-xl p-4 border border-slate-700/80 flex flex-col relative overflow-hidden">
+          <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider">High Fit (≥ 75%)</span>
+          <span id="statHigh" class="text-3xl font-extrabold text-emerald-400 mt-1">0</span>
+        </div>
+        <div class="glass-panel rounded-xl p-4 border border-slate-700/80 flex flex-col relative overflow-hidden">
+          <span class="text-xs text-slate-300 font-semibold uppercase tracking-wider">Avg Match Score</span>
+          <span id="statAvg" class="text-3xl font-extrabold text-slate-200 mt-1">0%</span>
+        </div>
+      </div>
+
+      <!-- Main Leaderboard Card -->
+      <div class="glass-panel rounded-2xl p-6 shadow-2xl flex flex-col gap-5 border border-slate-700/80 flex-1">
+        
+        <!-- Header & Action Bar -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-700/80 pb-4">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              Candidates Leaderboard
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Ranked in real-time using local sequence regression scoring</p>
+          </div>
+
+          <!-- Download & Clear Buttons -->
+          <div class="flex items-center gap-2">
+            <button id="exportCsvBtn" onclick="exportToCSV()" disabled class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-600 px-3.5 py-2 rounded-xl font-semibold flex items-center gap-1.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Export CSV
+            </button>
+            <button onclick="clearAll()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 px-3.5 py-2 rounded-xl font-medium transition-colors shadow-sm">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <!-- Search input -->
+          <div class="relative w-full sm:w-64">
+            <input type="text" id="searchInput" oninput="renderLeaderboard()" placeholder="Search candidate..." class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-400" />
+            <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          
+          <!-- Category Filter Tabs -->
+          <div class="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 w-full sm:w-auto overflow-x-auto">
+            <button onclick="setFilter('all')" id="filter-all" class="text-xs px-3 py-1 rounded-lg font-semibold text-slate-950 bg-gradient-to-r from-slate-200 to-slate-400 transition-all shadow">All</button>
+            <button onclick="setFilter('high')" id="filter-high" class="text-xs px-3 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition-colors">High Fit</button>
+            <button onclick="setFilter('moderate')" id="filter-moderate" class="text-xs px-3 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition-colors">Moderate</button>
+            <button onclick="setFilter('low')" id="filter-low" class="text-xs px-3 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition-colors">Low Fit</button>
+          </div>
+        </div>
+
+        <!-- Leaderboard Table Area -->
+        <div class="overflow-x-auto rounded-xl border border-slate-700/80 flex-1 bg-slate-950/40">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-900/90 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
+                <th class="py-3.5 px-4 w-14 text-center">Rank</th>
+                <th class="py-3.5 px-4">Candidate / File</th>
+                <th class="py-3.5 px-4 text-center">Match Score</th>
+                <th class="py-3.5 px-4">Recommendation</th>
+                <th class="py-3.5 px-4 text-right">Words</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardTbody" class="divide-y divide-slate-800/80 text-sm">
+              <!-- Empty State -->
+              <tr id="emptyRow">
+                <td colspan="5" class="py-16 text-center text-slate-500">
+                  <div class="flex flex-col items-center justify-center gap-3">
+                    <div class="w-14 h-14 rounded-full bg-gradient-to-b from-slate-800 to-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 shadow-inner">
+                      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
+                    </div>
+                    <p class="text-sm font-semibold text-slate-300">No resumes scored yet</p>
+                    <p class="text-xs text-slate-500 max-w-sm">Enter a job description on the left, attach candidate PDF resumes, and click "Analyze & Rank Resumes" to generate rankings.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/90 py-4 px-6 text-center text-xs text-slate-500">
+    AI Resume Screener & Leaderboard System &bull; Metallic Edition &bull; Powered by FastAPI & PyTorch
+  </footer>
+
+  <!-- JavaScript Logic -->
+  <script>
+    let selectedFiles = [];
+    let currentResults = [];
+    let activeFilter = 'all';
+
+    // Preset Job Descriptions
+    const PRESETS = {
+      python: `Senior Python Full-Stack Developer with 4+ years of experience in FastAPI, Django, or Flask. Required skills: PyTorch, Hugging Face Transformers, RESTful APIs, PostgreSQL, Docker, Unit Testing, and Tailwind CSS. Responsible for designing ML-backed web services and high-throughput data processing pipelines.`,
+      ai: `AI/ML Engineer specializing in Natural Language Processing (NLP) and Large Language Models. Strong proficiency in PyTorch, DistilBERT, Transformers, Fine-Tuning, Python 3.10+, Prompt Engineering, vector databases, and model deployment using FastAPI & Docker.`,
+      frontend: `Senior Frontend Developer proficient in modern HTML5, Vanilla JavaScript (ES6+), Tailwind CSS, React/Next.js, UI/UX aesthetics, responsive layouts, web accessibility, dynamic animations, and REST API consumption.`
+    };
+
+    function setPreset(type) {
+      if (PRESETS[type]) {
+        document.getElementById('jobDescription').value = PRESETS[type];
+      }
+    }
+
+    // Drag and drop handlers
+    const dropZone = document.getElementById('dropZone');
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-slate-300', 'bg-slate-900/80');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-slate-300', 'bg-slate-900/80');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      addFiles(files);
+    });
+
+    function handleFileSelect(event) {
+      addFiles(event.target.files);
+    }
+
+    function addFiles(files) {
+      for (let file of files) {
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+          if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+            selectedFiles.push(file);
+          }
+        }
+      }
+      renderFileList();
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      renderFileList();
+    }
+
+    function renderFileList() {
+      const listEl = document.getElementById('fileList');
+      const badgeEl = document.getElementById('fileCountBadge');
+      
+      badgeEl.innerText = `${selectedFiles.length} PDF${selectedFiles.length === 1 ? '' : 's'}`;
+
+      if (selectedFiles.length === 0) {
+        listEl.classList.add('hidden');
+        listEl.innerHTML = '';
+        return;
+      }
+
+      listEl.classList.remove('hidden');
+      listEl.innerHTML = selectedFiles.map((file, i) => `
+        <div class="flex items-center justify-between bg-slate-950/90 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs shadow-inner">
+          <div class="flex items-center gap-2 overflow-hidden mr-2">
+            <svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V7.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 1H7a2 2 0 00-2 2v16a2 2 0 002 2z"></path>
+            </svg>
+            <span class="truncate text-slate-200 font-medium">${escapeHtml(file.name)}</span>
+            <span class="text-slate-400 shrink-0">(${(file.size / 1024).toFixed(0)} KB)</span>
+          </div>
+          <button type="button" onclick="removeFile(${i})" class="text-slate-400 hover:text-red-400 p-1 rounded hover:bg-slate-800 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // Submit Request to FastAPI backend
+    async function submitScreening() {
+      const jobDesc = document.getElementById('jobDescription').value.trim();
+
+      if (!jobDesc) {
+        showStatus('Please enter a Job Description before proceeding.', 'error');
+        return;
+      }
+
+      if (selectedFiles.length === 0) {
+        showStatus('Please attach at least one PDF candidate resume.', 'error');
+        return;
+      }
+
+      setLoadingState(true);
+      showStatus('Extracting text & computing model embeddings...', 'info');
+
+      const formData = new FormData();
+      formData.append('job_description', jobDesc);
+      selectedFiles.forEach(file => {
+        formData.append('files', file);
+      });
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/score-resumes/', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.detail || `Server returned code ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.status === 'success' && Array.isArray(data.candidates)) {
+          currentResults = data.candidates;
+          updateStats();
+          renderLeaderboard();
+          showStatus(`Successfully ranked ${data.candidates.length} candidate(s)!`, 'success');
+          document.getElementById('exportCsvBtn').disabled = false;
+        } else {
+          throw new Error('Unexpected response format from server.');
+        }
+
+      } catch (err) {
+        console.error(err);
+        showStatus(`Error: ${err.message}`, 'error');
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    function setLoadingState(isLoading) {
+      const btn = document.getElementById('analyzeBtn');
+      const icon = document.getElementById('btnIcon');
+      const spinner = document.getElementById('btnSpinner');
+      const text = document.getElementById('btnText');
+
+      btn.disabled = isLoading;
+      if (isLoading) {
+        icon.classList.add('hidden');
+        spinner.classList.remove('hidden');
+        text.innerText = 'Analyzing Candidate Resumes...';
+      } else {
+        icon.classList.remove('hidden');
+        spinner.classList.add('hidden');
+        text.innerText = 'Analyze & Rank Resumes';
+      }
+    }
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('statusMessage');
+      el.classList.remove('hidden', 'bg-red-500/10', 'text-red-400', 'border-red-500/30', 'bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/30', 'bg-slate-800', 'text-slate-200', 'border-slate-600');
+      
+      el.classList.add('border');
+      if (type === 'error') {
+        el.classList.add('bg-red-950/40', 'text-red-300', 'border-red-700/50');
+      } else if (type === 'success') {
+        el.classList.add('bg-emerald-950/40', 'text-emerald-300', 'border-emerald-700/50');
+      } else {
+        el.classList.add('bg-slate-900', 'text-slate-200', 'border-slate-600');
+      }
+
+      el.innerText = msg;
+    }
+
+    function updateStats() {
+      document.getElementById('statTotal').innerText = currentResults.length;
+      const highCount = currentResults.filter(c => c.score >= 75).length;
+      document.getElementById('statHigh').innerText = highCount;
+      
+      if (currentResults.length > 0) {
+        const sum = currentResults.reduce((acc, c) => acc + c.score, 0);
+        const avg = (sum / currentResults.length).toFixed(1);
+        document.getElementById('statAvg').innerText = `${avg}%`;
+      } else {
+        document.getElementById('statAvg').innerText = '0%';
+      }
+    }
+
+    function setFilter(filter) {
+      activeFilter = filter;
+      ['all', 'high', 'moderate', 'low'].forEach(f => {
+        const btn = document.getElementById(`filter-${f}`);
+        if (f === filter) {
+          btn.className = 'text-xs px-3 py-1 rounded-lg font-semibold text-slate-950 bg-gradient-to-r from-slate-200 to-slate-400 transition-all shadow';
+        } else {
+          btn.className = 'text-xs px-3 py-1 rounded-lg font-medium text-slate-400 hover:text-white transition-colors';
+        }
+      });
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      const tbody = document.getElementById('leaderboardTbody');
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      let filtered = currentResults.filter(c => {
+        const matchesSearch = c.candidate_name.toLowerCase().includes(searchQuery) || c.filename.toLowerCase().includes(searchQuery);
+        if (!matchesSearch) return false;
+
+        if (activeFilter === 'high') return c.score >= 75;
+        if (activeFilter === 'moderate') return c.score >= 50 && c.score < 75;
+        if (activeFilter === 'low') return c.score < 50;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-12 text-center text-slate-500 text-xs">
+              ${currentResults.length === 0 ? 'No resumes scored yet' : 'No candidates match the current filter/search.'}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((c, idx) => {
+        // Rank badge color (Metallic Gold, Silver, Bronze, Steel)
+        let rankBadgeClass = 'bg-slate-800 text-slate-400 border border-slate-700';
+        if (idx === 0) rankBadgeClass = 'bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 text-slate-950 border border-yellow-200 font-extrabold shadow-md shadow-yellow-500/20';
+        else if (idx === 1) rankBadgeClass = 'bg-gradient-to-r from-slate-100 via-slate-300 to-slate-400 text-slate-950 border border-slate-100 font-bold shadow-md shadow-slate-400/20';
+        else if (idx === 2) rankBadgeClass = 'bg-gradient-to-r from-amber-700 via-amber-600 to-amber-800 text-slate-100 border border-amber-500 font-bold shadow-md shadow-amber-700/20';
+
+        // Fit Badge & Progress Metallic Gradients
+        let badgeClass = '';
+        let barClass = '';
+        if (c.score >= 75) {
+          badgeClass = 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 shadow-sm';
+          barClass = 'bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-300';
+        } else if (c.score >= 50) {
+          badgeClass = 'bg-amber-950/60 text-amber-300 border border-amber-500/40 shadow-sm';
+          barClass = 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300';
+        } else {
+          badgeClass = 'bg-rose-950/60 text-rose-300 border border-rose-500/40 shadow-sm';
+          barClass = 'bg-gradient-to-r from-rose-600 via-red-500 to-rose-400';
+        }
+
+        return `
+          <tr class="hover:bg-slate-900/60 transition-colors">
+            <td class="py-3.5 px-4 text-center">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs ${rankBadgeClass}">
+                #${idx + 1}
+              </span>
+            </td>
+            <td class="py-3.5 px-4">
+              <div class="flex flex-col">
+                <span class="font-bold text-slate-100 text-sm">${escapeHtml(c.candidate_name)}</span>
+                <span class="text-xs text-slate-400 font-mono">${escapeHtml(c.filename)}</span>
+              </div>
+            </td>
+            <td class="py-3.5 px-4">
+              <div class="flex flex-col items-center gap-1.5">
+                <span class="font-extrabold text-sm text-slate-100">${c.score.toFixed(1)}%</span>
+                <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-700/80 shadow-inner">
+                  <div class="${barClass} h-full rounded-full transition-all duration-500 shadow-sm" style="width: ${Math.max(5, c.score)}%"></div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}">
+                ${escapeHtml(c.recommendation)}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-right text-xs font-mono text-slate-400">
+              ${c.word_count || 0}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportToCSV() {
+      if (!currentResults || currentResults.length === 0) return;
+
+      const headers = ['Rank', 'Candidate Name', 'Filename', 'Match Score (%)', 'Recommendation', 'Fit Category', 'Word Count'];
+      const rows = currentResults.map((c, i) => [
+        i + 1,
+        `"${c.candidate_name.replace(/"/g, '""')}"`,
+        `"${c.filename.replace(/"/g, '""')}"`,
+        c.score.toFixed(2),
+        `"${c.recommendation.replace(/"/g, '""')}"`,
+        `"${c.fit_category.replace(/"/g, '""')}"`,
+        c.word_count
+      ]);
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `resume_leaderboard_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function clearAll() {
+      selectedFiles = [];
+      currentResults = [];
+      document.getElementById('jobDescription').value = '';
+      document.getElementById('fileInput').value = '';
+      document.getElementById('exportCsvBtn').disabled = true;
+      document.getElementById('statusMessage').classList.add('hidden');
+      renderFileList();
+      updateStats();
+      renderLeaderboard();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
+
