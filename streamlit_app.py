@@ -5,13 +5,58 @@ import streamlit as st
 import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-# Page layout configuration
-st.set_page_config(page_title="AI Resume Screener", page_icon="📄", layout="wide")
+# -------------------------------------------------------------
+# 1. Page Configuration & Custom CSS Injection
+# -------------------------------------------------------------
+st.set_page_config(
+    page_title="AI Resume Screener", 
+    page_icon="📄", 
+    layout="wide"
+)
 
-st.title("📄 AI Resume Screener & Leaderboard")
-st.write("Upload candidate resumes (PDF) and paste a job description to score and rank fits.")
+# Inject custom CSS to make Streamlit look like a sleek dashboard
+st.markdown("""
+    <style>
+    /* Dark dashboard theme styling */
+    .main {
+        background-color: #0F172A;
+    }
+    
+    /* Clean primary header styling */
+    h1 {
+        color: #F8FAFC !important;
+        font-weight: 700;
+    }
+    
+    /* Hide default Streamlit clutter */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Style sidebar submit button */
+    div.stButton > button:first-child {
+        background-color: #4F46E5;
+        color: #FFFFFF;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        padding: 0.6rem 1rem;
+        width: 100%;
+        transition: all 0.2s ease-in-out;
+    }
+    
+    div.stButton > button:first-child:hover {
+        background-color: #4338CA;
+        border: none;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# 1. Load Model & Tokenizer with Caching (Runs once)
+st.title("📄 AI Resume Screener & Candidate Leaderboard")
+st.write("Upload candidate resumes (PDF) and paste a job description to score and rank candidate fits.")
+
+# -------------------------------------------------------------
+# 2. Load ML Model & Tokenizer (Cached)
+# -------------------------------------------------------------
 @st.cache_resource
 def load_model():
     model_path = "./resume_model"
@@ -22,7 +67,7 @@ def load_model():
 
 try:
     tokenizer, model = load_model()
-    st.success("AI Model loaded successfully!")
+    st.success("AI Model loaded successfully!", icon="✅")
 except Exception as e:
     st.error(f"Error loading model from './resume_model': {e}")
     st.stop()
@@ -40,20 +85,26 @@ def extract_text_from_pdf(file_bytes):
     except Exception:
         return ""
 
-# Sidebar / Left Input Panel
-st.sidebar.header("Input Panel")
-job_description = st.sidebar.text_area("Paste Job Description:", height=200)
+# -------------------------------------------------------------
+# 3. Sidebar Input Workspace
+# -------------------------------------------------------------
+st.sidebar.header("📋 Input Panel")
+job_description = st.sidebar.text_area("Paste Job Description:", height=220, placeholder="e.g. Seeking a Python Developer with PyTorch and FastAPI experience...")
 uploaded_files = st.sidebar.file_uploader("Upload Resumes (PDF):", type=["pdf"], accept_multiple_files=True)
 
-# Main Dashboard Processing
-if st.sidebar.button("Analyze & Rank Candidates"):
+analyze_btn = st.sidebar.button("🚀 Analyze & Rank Candidates")
+
+# -------------------------------------------------------------
+# 4. Processing Engine & Leaderboard View
+# -------------------------------------------------------------
+if analyze_btn:
     if not job_description.strip():
-        st.warning("Please enter a job description.")
+        st.warning("Please enter a job description before running the evaluation.", icon="⚠️")
     elif not uploaded_files:
-        st.warning("Please upload at least one PDF resume.")
+        st.warning("Please upload at least one PDF resume to evaluate.", icon="⚠️")
     else:
         results = []
-        progress_bar = st.progress(0)
+        progress_bar = st.progress(0, text="Extracting and scoring resumes...")
         
         for idx, file in enumerate(uploaded_files):
             file_bytes = file.read()
@@ -89,17 +140,32 @@ if st.sidebar.button("Analyze & Rank Candidates"):
                 "Recommendation": recommendation
             })
             
-            progress_bar.progress((idx + 1) / len(uploaded_files))
+            progress_bar.progress((idx + 1) / len(uploaded_files), text=f"Processed {idx + 1}/{len(uploaded_files)} resumes")
 
-        # Convert to Dataframe & Sort
+        progress_bar.empty()
+
+        # Convert to Dataframe & Sort descending
         df = pd.DataFrame(results)
         df = df.sort_values(by="Match Score (%)", ascending=False).reset_index(drop=True)
         
-        # Display Leaderboard
+        # Display Clean Dynamic Leaderboard
         st.subheader("🏆 Candidate Leaderboard")
-        st.dataframe(df, use_container_width=True)
         
-        # Download Button
+        # Renders the clean dataframe WITHOUT index numbers 0, 1, 2...
+        st.dataframe(
+            df,
+            column_config={
+                "Candidate / File": st.column_config.TextColumn("Candidate / File", width="medium"),
+                "Match Score (%)": st.column_config.NumberColumn("Match Score (%)", format="%.2f%%"),
+                "Recommendation": st.column_config.TextColumn("Recommendation", width="medium"),
+            },
+            use_container_width=True,
+            hide_index=True  # Hides row numbers index
+        )
+        
+        st.write("")
+        
+        # Download Controls
         csv_data = df.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="📥 Download Results as CSV",
@@ -107,3 +173,4 @@ if st.sidebar.button("Analyze & Rank Candidates"):
             file_name="candidate_rankings.csv",
             mime="text/csv"
         )
+        
